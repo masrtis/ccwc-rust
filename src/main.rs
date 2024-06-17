@@ -2,11 +2,8 @@ use std::env;
 use std::error::Error;
 use std::fmt;
 use std::fs;
-use std::io;
-use std::io::BufRead;
-use std::io::Read;
-use std::path;
-use std::path::PathBuf;
+use std::io::{self, BufRead, Read};
+use std::path::{self, PathBuf};
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]
@@ -62,15 +59,12 @@ impl CountCommand {
         }
     }
 
-    fn prepare(
-        command_string: CountCommandLine,
-        file_contents: Vec<u8>,
-    ) -> io::Result<CountCommand> {
+    fn prepare(command_string: CountCommandLine, file_contents: Vec<u8>) -> CountCommand {
         match command_string {
-            CountCommandLine::Bytes => Ok(CountCommand::Bytes(file_contents)),
-            CountCommandLine::Lines => Ok(CountCommand::Lines(file_contents)),
-            CountCommandLine::Words => Ok(CountCommand::Words(file_contents)),
-            CountCommandLine::Chars => Ok(CountCommand::Chars(file_contents)),
+            CountCommandLine::Bytes => CountCommand::Bytes(file_contents),
+            CountCommandLine::Lines => CountCommand::Lines(file_contents),
+            CountCommandLine::Words => CountCommand::Words(file_contents),
+            CountCommandLine::Chars => CountCommand::Chars(file_contents),
         }
     }
 }
@@ -116,7 +110,7 @@ struct ParseArgsResult {
 fn parse_args() -> Result<ParseArgsResult, WcError> {
     let args_iter = env::args();
     if args_iter.len() > 3 {
-        println!("{}", WcError::CommandLine);
+        eprintln!("{}", WcError::CommandLine);
         return Err(WcError::CommandLine);
     }
 
@@ -140,9 +134,9 @@ fn parse_args() -> Result<ParseArgsResult, WcError> {
             "-l" => vec![CountCommandLine::Lines],
             "-m" => vec![CountCommandLine::Chars],
             _ => vec![
-                CountCommandLine::Bytes,
-                CountCommandLine::Words,
                 CountCommandLine::Lines,
+                CountCommandLine::Words,
+                CountCommandLine::Bytes,
             ],
         },
         file_path,
@@ -151,30 +145,27 @@ fn parse_args() -> Result<ParseArgsResult, WcError> {
 
 fn prepare_commands(parsed_command_line: ParseArgsResult) -> io::Result<CommandLine> {
     let mut reader: Box<dyn io::Read> = if let Some(ref file_path) = parsed_command_line.file_path {
-        println!("Opening file {}", file_path.display());
+        eprintln!("Opening file {}...", file_path.display());
         let file = fs::File::open(file_path)?;
         Box::new(io::BufReader::new(file))
     } else {
-        println!("Reading from stdin");
+        eprintln!("Reading from stdin...");
         Box::new(io::stdin())
     };
 
     let mut contents: Vec<u8> = Vec::new();
     reader.read_to_end(&mut contents)?;
 
-    let preparation_result: io::Result<Vec<CountCommand>> = parsed_command_line
+    let commands: Vec<CountCommand> = parsed_command_line
         .parsed_commands
         .into_iter()
         .map(|command_string| CountCommand::prepare(command_string, contents.clone()))
         .collect();
 
-    match preparation_result {
-        Ok(commands) => Ok(CommandLine {
-            actions: commands,
-            file_path: parsed_command_line.file_path,
-        }),
-        Err(io_error) => Err(io_error),
-    }
+    Ok(CommandLine {
+        actions: commands,
+        file_path: parsed_command_line.file_path,
+    })
 }
 
 fn main() -> Result<(), WcError> {
