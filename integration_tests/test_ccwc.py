@@ -24,9 +24,7 @@ def test_data_path():
 def test_ccwc_rust_bytes(ccwc_path, test_data_path):
     result = subprocess.run([ccwc_path, "-c", test_data_path], stdout=subprocess.PIPE)
 
-    assert result.stdout.strip() == "342190 {0}".format(test_data_path).encode(
-        "utf-8"
-    )
+    assert result.stdout.strip() == "342190 {0}".format(test_data_path).encode("utf-8")
 
 
 def test_ccwc_rust_lines(ccwc_path, test_data_path):
@@ -69,3 +67,15 @@ def test_ccwc_rust_lines_from_stdin(ccwc_path, test_data_path):
         )
 
     assert result.stdout.strip() == "7145".encode("utf-8")
+
+
+def test_ccwc_nonexistant_file(ccwc_path):
+    result = subprocess.run(
+        [ccwc_path, "nonexistant"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=1,
+    )
+
+    assert result.stderr.strip().find(b"No such file or directory") != -1
+

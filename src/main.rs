@@ -59,7 +59,10 @@ impl CountCommand {
         }
     }
 
-    fn prepare(command_string: CountCommandLine, file_contents: Vec<u8>) -> CountCommand {
+    fn prepare(
+        command_string: CountCommandLine,
+        file_contents: Vec<u8>,
+    ) -> CountCommand {
         match command_string {
             CountCommandLine::Bytes => CountCommand::Bytes(file_contents),
             CountCommandLine::Lines => CountCommand::Lines(file_contents),
@@ -96,10 +99,8 @@ impl CommandLine {
     }
 }
 
-fn is_file(path: &str) -> bool {
-    fs::metadata(path)
-        .map(|metadata| metadata.is_file())
-        .unwrap_or(false)
+fn is_command(arg: &str) -> bool {
+    matches!(arg, "-l" | "-w" | "-c" | "-m")
 }
 
 struct ParseArgsResult {
@@ -118,9 +119,10 @@ fn parse_args() -> Result<ParseArgsResult, WcError> {
     let command = args
         .get(1)
         .map(|s| s.to_string())
-        .filter(|s| !is_file(s))
+        .filter(|s| is_command(s))
         .unwrap_or_default();
-    let last_arg_is_input_file = args.len() > 1 && is_file(args.last().unwrap());
+    let last_arg_is_input_file =
+        args.len() > 1 && !is_command(args.last().unwrap());
     let file_path = if last_arg_is_input_file {
         Some(PathBuf::from(args.last().unwrap()))
     } else {
@@ -143,15 +145,18 @@ fn parse_args() -> Result<ParseArgsResult, WcError> {
     })
 }
 
-fn prepare_commands(parsed_command_line: ParseArgsResult) -> io::Result<CommandLine> {
-    let mut reader: Box<dyn io::Read> = if let Some(ref file_path) = parsed_command_line.file_path {
-        eprintln!("Opening file {}...", file_path.display());
-        let file = fs::File::open(file_path)?;
-        Box::new(io::BufReader::new(file))
-    } else {
-        eprintln!("Reading from stdin...");
-        Box::new(io::stdin())
-    };
+fn prepare_commands(
+    parsed_command_line: ParseArgsResult,
+) -> io::Result<CommandLine> {
+    let mut reader: Box<dyn io::Read> =
+        if let Some(ref file_path) = parsed_command_line.file_path {
+            eprintln!("Opening file {}...", file_path.display());
+            let file = fs::File::open(file_path)?;
+            Box::new(io::BufReader::new(file))
+        } else {
+            eprintln!("Reading from stdin...");
+            Box::new(io::stdin())
+        };
 
     let mut contents: Vec<u8> = Vec::new();
     reader.read_to_end(&mut contents)?;
@@ -159,7 +164,9 @@ fn prepare_commands(parsed_command_line: ParseArgsResult) -> io::Result<CommandL
     let commands: Vec<CountCommand> = parsed_command_line
         .parsed_commands
         .into_iter()
-        .map(|command_string| CountCommand::prepare(command_string, contents.clone()))
+        .map(|command_string| {
+            CountCommand::prepare(command_string, contents.clone())
+        })
         .collect();
 
     Ok(CommandLine {
