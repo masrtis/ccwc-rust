@@ -6,18 +6,33 @@ This repository implements the [wc Coding Challenge](https://codingchallenges.su
 
 This program was tested on Windows 11 and a combination of the Rust and Python Docker images.
 
-To run on Windows 11, the [Rust toolchain should be installed](https://www.rust-lang.org/learn/get-started). To build: `cargo build` and to run: `cargo run`. Other cargo options can be used
-as is standard.
+Dependencies
+- [Rust](https://www.rust-lang.org/learn/get-started).
+- [Python](https://www.python.org/about/gettingstarted/)
+- [Pytest](https://docs.pytest.org/en/8.2.x/getting-started.html)
+- [Docker](https://www.docker.com/get-started/)
 
-To run the Docker images specified in the Dockerfile, Docker should be installed. `docker build -t ccwc-rust .` will build a Docker image, and `docker run -it ccwc-rust` will run the tests.
+To build the Rust binary:
+- `cargo build`
+
+To run the Rust binary:
+- `cargo run`
+
+Other cargo options can be used as needed.
+
+The provided Dockerfile includes steps to build the Rust binary using cargo and runs the Python tests. This avoids needing to install dependencies manually.
+
+To run the Docker images specified in the Dockerfile:
+- `docker build -t ccwc-rust .`
+- `docker run -it ccwc-rust`
 
 ## Implementation and Test
 
 The main.rs file is responsible for parsing, preparing, and processing commands that are specified as arguments to the program. The valid commands that can be specified are:
- `-w` - counts words in text file
- `-c` - counts bytes in file
- `-m` - counts multibyte characters in text file
- `-l` - counts lines in text file
+ - `-w` - counts words in text file
+ - `-c` - counts bytes in file
+ - `-m` - counts multibyte characters in text file
+ - `-l` - counts lines in text file
  
 Only one command can be specified. One optional file path can be specified, which will open the file to execute the command specified. If no file is specified, the command specified will be executed against input provided from the standard input stream. If no commands are specified, the commands `-l`, `-w`, and `-c` will be run.
 
