@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  verify:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set environment variables
+      id: get-timestamp
+      run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+    
+    - uses: actions/checkout@v4
+    - name: Build and run the Docker image
+      run: docker build . --file Dockerfile --tag ccwc-rust:${{env.TIMESTAMP}} && docker run --tag ccwc-rust:${{env.TIMESTAMP}}
