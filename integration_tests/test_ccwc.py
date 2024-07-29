@@ -41,12 +41,12 @@ def test_ccwc_rust_words(ccwc_path, test_data_path):
 
 def test_ccwc_rust_characters(ccwc_path, test_data_path):
     with open(test_data_path, encoding="utf-8", newline="") as testFile:
-        testContents = testFile.read()
+        test_contents = testFile.read()
 
     result = subprocess.run([ccwc_path, "-m", test_data_path], stdout=subprocess.PIPE)
 
     assert result.stdout.strip() == "{0} {1}".format(
-        len(testContents), test_data_path
+        len(test_contents), test_data_path
     ).encode("utf-8")
 
 
@@ -69,7 +69,7 @@ def test_ccwc_rust_lines_from_stdin(ccwc_path, test_data_path):
     assert result.stdout.strip() == "7145".encode("utf-8")
 
 
-def test_ccwc_nonexistant_file(ccwc_path):
+def test_ccwc_nonexistent_file(ccwc_path):
     result = subprocess.run(
         [ccwc_path, "nonexistant"],
         stdout=subprocess.PIPE,

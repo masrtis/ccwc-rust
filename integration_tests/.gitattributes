@@ -1,0 +1,2 @@
+# Avoid line ending changes for the test data when checking out on different platforms
+test.txt -text

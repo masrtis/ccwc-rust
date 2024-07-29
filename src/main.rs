@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs;
 use std::io::{self, BufRead, Read};
-use std::path::{self, PathBuf};
+use std::path::PathBuf;
 use std::string::FromUtf8Error;
 
 #[derive(Debug)]
@@ -74,7 +74,7 @@ impl CountCommand {
 
 struct CommandLine {
     actions: Vec<CountCommand>,
-    file_path: Option<path::PathBuf>,
+    file_path: Option<PathBuf>,
 }
 
 impl CommandLine {
@@ -148,7 +148,7 @@ fn parse_args() -> Result<ParseArgsResult, WcError> {
 fn prepare_commands(
     parsed_command_line: ParseArgsResult,
 ) -> io::Result<CommandLine> {
-    let mut reader: Box<dyn io::Read> =
+    let mut reader: Box<dyn Read> =
         if let Some(ref file_path) = parsed_command_line.file_path {
             eprintln!("Opening file {}...", file_path.display());
             let file = fs::File::open(file_path)?;

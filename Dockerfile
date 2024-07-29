@@ -18,7 +18,7 @@ WORKDIR /tmp/test
 COPY integration_tests/* .
 COPY --from=build /tmp/build/target/release/ccwc-rust .
 
-ENV CCWC_PATH /tmp/test/ccwc-rust
-ENV TEST_DATA_PATH test.txt
+ENV CCWC_PATH=/tmp/test/ccwc-rust
+ENV TEST_DATA_PATH=test.txt
 
 CMD ["pytest"]
